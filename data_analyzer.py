@@ -105,9 +105,23 @@ def perform_analysis(filepath):
 
 def generate_visualizations(df, output_dirs):
     """Creates Bar Chart, Scatter Plot, and Heatmap and saves them to multiple directories."""
-    # Ensure all output directories exist
+    # Ensure all output directories exist and are writable
+    valid_dirs = []
     for d in output_dirs:
-        os.makedirs(d, exist_ok=True)
+        try:
+            os.makedirs(d, exist_ok=True)
+            # Verify write access by writing a temporary file
+            temp_path = os.path.join(d, '.write_test')
+            with open(temp_path, 'w') as f:
+                f.write('test')
+            os.remove(temp_path)
+            valid_dirs.append(d)
+        except Exception as e:
+            print(f"[Warning] Directory not writable, skipping: {d} (Error: {e})")
+            
+    if not valid_dirs:
+        print("[Error] No writable output directories found. Cannot save visualizations.")
+        return
         
     # Styling configuration
     sns.set_theme(style="whitegrid")
@@ -156,8 +170,11 @@ def generate_visualizations(df, output_dirs):
     plt.tight_layout()
     
     # Save Bar Chart
-    for d in output_dirs:
-        plt.savefig(os.path.join(d, 'bar_chart_category_purchase.png'), dpi=150)
+    for d in valid_dirs:
+        try:
+            plt.savefig(os.path.join(d, 'bar_chart_category_purchase.png'), dpi=150)
+        except Exception as e:
+            print(f"[Error] Failed to save bar chart to {d}: {e}")
     plt.close()
     
     # ----------------------------------------------------
@@ -188,8 +205,11 @@ def generate_visualizations(df, output_dirs):
     plt.tight_layout()
     
     # Save Scatter Plot
-    for d in output_dirs:
-        plt.savefig(os.path.join(d, 'scatter_plot_income_vs_spending.png'), dpi=150)
+    for d in valid_dirs:
+        try:
+            plt.savefig(os.path.join(d, 'scatter_plot_income_vs_spending.png'), dpi=150)
+        except Exception as e:
+            print(f"[Error] Failed to save scatter plot to {d}: {e}")
     plt.close()
     
     # ----------------------------------------------------
@@ -220,8 +240,11 @@ def generate_visualizations(df, output_dirs):
     plt.tight_layout()
     
     # Save Heatmap
-    for d in output_dirs:
-        plt.savefig(os.path.join(d, 'heatmap_correlation.png'), dpi=150)
+    for d in valid_dirs:
+        try:
+            plt.savefig(os.path.join(d, 'heatmap_correlation.png'), dpi=150)
+        except Exception as e:
+            print(f"[Error] Failed to save heatmap to {d}: {e}")
     plt.close()
     
     print(f"[Info] Visualizations successfully saved to output directories.")
@@ -230,7 +253,7 @@ if __name__ == '__main__':
     csv_file = 'customer_behavior.csv'
     
     # Output directories: one in workspace, one in artifact directory for embedding
-    artifact_dir = '/Users/harshal/.gemini/antigravity/brain/1d57e544-7dbc-4cfd-a177-d2072e4d9321'
+    artifact_dir = '/Users/harshal/.gemini/antigravity/brain/a0400bc8-2555-40a0-a48d-a49b463f5bbd'
     output_dirs = [
         os.path.join(os.getcwd(), 'visualizations'),
         os.path.join(artifact_dir, 'visualizations')
